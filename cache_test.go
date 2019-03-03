@@ -24,7 +24,6 @@ func TestCache_Get(t *testing.T) {
 			}
 		}
 		wg.Done()
-		//print("quit")
 	}()
 	go func() {
 		for i:=0; i<10000000; i++{
@@ -33,7 +32,7 @@ func TestCache_Get(t *testing.T) {
 		wg.Done()
 	}()
 	cache.Set("this", "jiu shi", int64(time.Second*10))
-	//print(int(time.Second))
+
 	time.Sleep(time.Second*10)
 	val ,exist:= cache.Get("this")
 	if exist{
@@ -52,7 +51,6 @@ func BenchmarkCache_Get(b *testing.B) {
 	for i:=0; i<b.N; i++{
 		cache.Set("this", 1, int64(time.Second))
 		if _, exist := cache.Get("this"); exist{
-			//print(el.(string))
 		}
 	}
 }

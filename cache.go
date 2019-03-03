@@ -5,9 +5,14 @@ import (
 	"time"
 )
 
+
+
+
 type Cache struct {
 	cache map[string] Element
 	mu sync.RWMutex
+	expiredElements chan string
+	chanBufSize int
 }
 
 type Element struct {
@@ -15,8 +20,15 @@ type Element struct {
 	expire int64
 }
 
-func New()Cache{
-	return Cache{make(map[string]Element),sync.RWMutex{}}
+func New( chanBufSize int)Cache{
+	cache := Cache{make(map[string]Element),sync.RWMutex{}, make(chan string , chanBufSize),chanBufSize}
+	go func (){
+		for key := range cache.expiredElements{
+			delete(cache.cache, key)
+		}
+	}()
+
+	return cache
 }
 
 
@@ -28,6 +40,7 @@ func (self *Cache) Get(key string)(interface{}, bool){
 		return nil, false
 	}
 	if time.Now().UnixNano() > elem.expire{
+		self.expiredElements <- key
 		self.mu.RUnlock()
 		return nil, false
 	}
